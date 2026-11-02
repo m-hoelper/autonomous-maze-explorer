@@ -9,6 +9,8 @@ A small mecanum-wheel robot (Hiwonder MentorPi) that **solves a known maze, expl
 
 Teammates built the object detection and the map post-processing, see [Team](#team).
 
+**Read more:** [System architecture](#system-architecture) · [Technical deep dive: Nav2, controller, SLAM, algorithms](docs/ARCHITECTURE.md) · [Tuned parameters vs. stock](docs/SOLUTION.md) · [Run notes](docs/RUNNING.md)
+
 <p align="center">
   <img src="docs/media/demo.gif" alt="Robot driving to its first goal in the maze" width="240"><br>
   <em>An early autonomous test run at 5x speed: the robot localises with SLAM and drives to its first goal with Nav2.<br>
@@ -143,7 +145,7 @@ Group project in a team of four at TU Darmstadt. Everyone worked on the same ROS
 
 ## Credits
 
-The course starter repo (robot drivers, maze service, maze generation scripts) was provided by the course staff, see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+The course starter repo (robot drivers, maze service, maze file helpers) was provided by the course staff, see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Known limitations
 
