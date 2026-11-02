@@ -1,0 +1,21 @@
+# Robot-side systemd unit: starts bring-up (controller, LiDAR, SLAM, Nav2, camera, AprilTag, object detector) at boot.
+# Install: sudo cp this file /etc/systemd/system/ && sudo systemctl daemon-reload && sudo systemctl start ros2_searchforce_slam.service
+[Unit]
+Description=ROS2 SLAM Launch for MentorPi_Mecanum
+After=network.target
+
+[Service]
+Type=simple
+User=searchforce
+Group=searchforce
+ExecStart=/bin/bash -lc "\
+unset ROS_LOCALHOST_ONLY && \
+export ROS_DOMAIN_ID=3 && \
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp && \
+export MACHINE_TYPE=MentorPi_Mecanum && \
+source /opt/ros/jazzy/setup.bash && \
+source /home/searchforce/workspace/ros2_ws/install/local_setup.bash && \
+ros2 launch searchforce robot_bringup_launch.py"
+
+[Install]
+WantedBy=multi-user.target
