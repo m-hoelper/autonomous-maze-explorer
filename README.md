@@ -137,7 +137,7 @@ Each node writes its files to `~/searchforce_cache` on the machine it runs on: t
 
 ## Team
 
-Group project in a team of four at TU Darmstadt. Everyone worked on the same ROS 2 package. This repo is a cleaned-up version of the code that ran in the competition, moved from the team's GitLab into a single commit.
+Group project in a team of four at TU Darmstadt. Everyone worked on the same ROS 2 package. This repo is a cleaned-up version of the code that ran in the competition, moved here from the team's GitLab.
 
 **Moritz Hölper:** Nav2 and slam_toolbox tuning ([config/](ros2_ws/src/searchforce/config/), parameter table in [docs/SOLUTION.md](docs/SOLUTION.md)), `task1_goal_sequencer`, `task2_frontier_explorer`.
 

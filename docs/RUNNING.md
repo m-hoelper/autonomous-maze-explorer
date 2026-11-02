@@ -32,7 +32,6 @@ ros2 run searchforce task2_map_reconstruction
 # Task 3 (the detector already runs on the robot; it is part of the bring-up in every run)
 ros2 run searchforce task2_frontier_explorer
 ```
-Order of the original `launch_moritz.txt`: `maze_requester`, `goal_sequencer_threshold_moritz`, `random_goal_with_threshold_moritz_explorer_frontier_cluster`, `MapProcessorNode3` (now `task2_map_reconstruction`), `rviz_launch.py`.
 
 ## Useful extras used during the project
 ```bash
