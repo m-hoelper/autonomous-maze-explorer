@@ -147,6 +147,16 @@ Group project in a team of four at TU Darmstadt. Everyone worked on the same ROS
 
 The course starter repo (robot drivers, maze service, maze file helpers) was provided by the course staff, see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
+## What I'd do differently
+
+The code grew by trial and error on the robot over one semester, and it shows: the explorer is long and repetitive, there are no tests, and some logs are in German. I left it the way it ran in the competition instead of polishing it afterwards. Looking back, I would:
+
+- **Plan on the map, not on an assumed grid.** The cell walk puts goals on an absolute grid that assumes the SLAM map is aligned with the maze. Small map rotations made those goals drift, and frontier search was added to work around it. Starting from frontier search, or aligning the map to the maze first, would have been simpler.
+- **Pick frontiers by path length**, not straight-line distance, so the robot does not choose a frontier that is close but behind a wall.
+- **Put more effort into understanding the math behind the parameters.** We tuned mostly by trial and error and judged a change by the next run, which with a single run per change can also be chance. One look at the formula would have shown the problem with `minimum_angle_penalty: 5.0`: we raised it expecting a stronger heading penalty, but in the scan matcher it is the floor of a `max()` around a multiplier that is at most 1, so any value above 1 has no effect and the penalty is off ([ARCHITECTURE.md, section 4](docs/ARCHITECTURE.md#4-slam-slam_toolbox)). Today I would work through the math of a parameter in the source or the underlying method first, change one thing at a time, and compare several runs on the same route.
+- **Write the grid and frontier helpers as pure functions with unit tests**, so they can be checked without the robot instead of only on it.
+- **Record test and competition runs** (videos, rosbags, the task 2 maze plots). The only footage left is an early test run; there is nothing from competition day.
+
 ## Known limitations
 
 - The robot drivers and the maze server come from the course starter repo and are not included, so the full bring-up does not run without them.
