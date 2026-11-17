@@ -1,5 +1,7 @@
 # Autonomous maze robot with ROS 2, SLAM, and Nav2
 
+[![CI](https://github.com/m-hoelper/autonomous-maze-explorer/actions/workflows/ci.yml/badge.svg)](https://github.com/m-hoelper/autonomous-maze-explorer/actions/workflows/ci.yml)
+
 This repository has the code of a small robot with mecanum wheels, the Hiwonder MentorPi. The robot solves a known maze and explores an unknown one. It also finds a cube marked with AprilTags and reports the color and the position of the cube. It uses a 2-D LiDAR, wheel odometry, an IMU, and a camera. The software is ROS 2 Jazzy with slam_toolbox and Nav2.
 
 We built the robot for the master's project seminar *Robotics and Computational Intelligence* at TU Darmstadt in the summer term 2025. Our team placed 3rd in the course competition.
@@ -132,7 +134,7 @@ You need ROS 2 Jazzy, Nav2, and slam_toolbox from apt. You also need the robot s
 
 `task1_maze_requester`, `task3_object_detector`, and `robot_bringup_launch.py` start only in a workspace that contains these packages. Everything else builds and starts without them, including the Nav2 and slam_toolbox configuration.
 
-The Dockerfile builds the package on a plain `ros:jazzy` image. The build checks that the package and its dependencies install and build without the vendor packages.
+The Dockerfile builds the package on a plain `ros:jazzy` image. The build checks that the package and its dependencies install and build without the vendor packages. GitHub Actions runs this build on every push to `main`.
 
 ```bash
 docker build -t autonomous-maze-explorer .
