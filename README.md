@@ -107,13 +107,13 @@ The object detector is part of the robot bring-up, so it also runs during task 2
 
 ```
 ros2_ws/src/searchforce/
-	searchforce/
-		task1_maze_requester.py, task1_goal_sequencer.py, maze_solver.py
-		task2_frontier_explorer.py, task2_map_reconstruction.py
-		task3_object_detector.py
-		functions/                 maze graph helpers: maze file loading, adjacency matrix, cell numbering
-	launch/                      robot_bringup_launch.py, navigation_launch.py (Nav2 with the tuned parameters)
-	config/                      Nav2 parameters, slam_toolbox parameters, replanning behavior tree
+  searchforce/
+    task1_maze_requester.py, task1_goal_sequencer.py, maze_solver.py
+    task2_frontier_explorer.py, task2_map_reconstruction.py
+    task3_object_detector.py
+    functions/                 maze graph helpers: maze file loading, adjacency matrix, cell numbering
+  launch/                      robot_bringup_launch.py, navigation_launch.py (Nav2 with the tuned parameters)
+  config/                      Nav2 parameters, slam_toolbox parameters, replanning behavior tree
 deploy/                        systemd unit that starts the robot bring-up
 docs/                          architecture, parameters, run notes, media
 ```
