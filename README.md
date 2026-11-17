@@ -51,14 +51,14 @@ Each task allowed two attempts of 5 minutes each.
 The robot and a laptop share one ROS 2 network, with `ROS_DOMAIN_ID=3` and FastDDS:
 
 ```
- Robot (Jazzy, started at boot by systemd)                     Laptop (decision making)
- ┌───────────────────────────────────────────────┐            ┌───────────────────────────────────────┐
- │ ros_robot_controller + EKF  (wheel odom, IMU) │            │ Task 1: task1_maze_requester          │
- │ ldlidar_node               (LiDAR scan)        │  /map      │         task1_goal_sequencer          │
- │ slam_toolbox               (online async)  ────┼──────────► │ Task 2: task2_frontier_explorer       │
- │ Nav2: planner, RPP controller, BT navigator ◄──┼─────────── │         task2_map_reconstruction      │
- │ usb_cam + AprilTag + task3_object_detector     │  NavigateToPose goals                               │
- └───────────────────────────────────────────────┘            └───────────────────────────────────────┘
+ Robot (Jazzy, started at boot by systemd)                              Laptop (decision making)
+ ┌───────────────────────────────────────────────┐                      ┌──────────────────────────────────┐
+ │ ros_robot_controller + EKF  (wheel odom, IMU) │                      │ Task 1: task1_maze_requester     │
+ │ ldlidar_node               (LiDAR scan)       │  /map                │         task1_goal_sequencer     │
+ │ slam_toolbox               (online async)     │ ───────────────────► │ Task 2: task2_frontier_explorer  │
+ │ Nav2: planner, RPP controller, BT navigator   │ ◄─────────────────── │         task2_map_reconstruction │
+ │ usb_cam + AprilTag + task3_object_detector    │ NavigateToPose goals │                                  │
+ └───────────────────────────────────────────────┘                      └──────────────────────────────────┘
         /searchforce_status:  found → finish_detection → finished
 ```
 
