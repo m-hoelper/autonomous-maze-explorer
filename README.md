@@ -1,43 +1,54 @@
-# Autonomous Maze Robot — ROS 2 · SLAM · Nav2
+# Autonomous maze robot with ROS 2, SLAM, and Nav2
 
-A small mecanum-wheel robot (Hiwonder MentorPi) that **solves a known maze, explores an unknown one, and finds a cube with AprilTags and determines its colour and position**, using a 2-D LiDAR, wheel odometry, an IMU and a camera. Built with ROS 2 Jazzy, slam_toolbox and Nav2 for the master's project seminar *Robotics and Computational Intelligence* at TU Darmstadt (summer term 2025), where the team placed **3rd** in the course competition.
+This repository has the code of a small robot with mecanum wheels, the Hiwonder MentorPi. The robot solves a known maze and explores an unknown one. It also finds a cube marked with AprilTags and reports the color and the position of the cube. It uses a 2-D LiDAR, wheel odometry, an IMU, and a camera. The software is ROS 2 Jazzy with slam_toolbox and Nav2.
 
-**My part:**
-- Configuration and tuning of **Nav2 and slam_toolbox** for the 0.254 m maze, with the Regulated Pure Pursuit controller
-- **Goal sequencer** for task 1, which feeds the cell-centre goals to Nav2 (`task1_goal_sequencer`)
-- **Hybrid explorer** for tasks 2 and 3, a cell walk plus frontier search (`task2_frontier_explorer`)
+We built the robot for the master's project seminar *Robotics and Computational Intelligence* at TU Darmstadt in the summer term 2025. Our team placed 3rd in the course competition.
 
-Teammates built the object detection and the map post-processing, see [Team](#team).
+I did three parts of the project:
 
-**Read more:** [System architecture](#system-architecture) · [Technical deep dive: Nav2, controller, SLAM, algorithms](docs/ARCHITECTURE.md) · [Tuned parameters vs. stock](docs/SOLUTION.md) · [Run notes](docs/RUNNING.md)
+- I configured and tuned Nav2 and slam_toolbox for the 0.254 m maze, with the Regulated Pure Pursuit controller.
+- I wrote the goal sequencer for task 1, `task1_goal_sequencer`. It sends the cell-center goals to Nav2.
+- I wrote the hybrid explorer for tasks 2 and 3, `task2_frontier_explorer`. It combines a cell walk with frontier search.
+
+My teammates built the object detection and the map post-processing. [Team](#team) lists who did what.
+
+The other documents cover these topics:
+
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md) explains the Nav2 and SLAM setup, the controller, and the algorithms for the three tasks.
+- [PARAMETERS.md](docs/PARAMETERS.md) compares every tuned parameter with the stock value.
+- [RUNNING.md](docs/RUNNING.md) shows how the nodes were started on the robot and on the laptop.
 
 <p align="center">
   <img src="docs/media/demo.gif" alt="Robot driving to its first goal in the maze" width="240"><br>
-  <em>An early autonomous test run at 5x speed: the robot localises with SLAM and drives to its first goal with Nav2.<br>
-  <a href="docs/media/demo.mp4">Higher-quality MP4</a></em>
+  <em>An early autonomous test run at 5x speed. The robot localizes with SLAM and drives to its first goal with Nav2.<br>
+  <a href="docs/media/demo.mp4">The same run as an MP4 in higher quality</a></em>
 </p>
 
-| The robot: Hiwonder MentorPi with LiDAR and pan/tilt camera | The maze: 0.254 m cells with AprilTag walls | Result: 3rd place, PS Robotik 2025 |
+| The robot: Hiwonder MentorPi with LiDAR and a pan-tilt camera | The maze: 0.254 m cells with AprilTag walls | The result: 3rd place, PS Robotik 2025 |
 |---|---|---|
-| <img src="docs/media/robot.jpg" width="260"> | <img src="docs/media/maze.jpg" width="320"> | <img src="docs/media/trophy.jpg" width="150"> |
+| <img src="docs/media/robot.jpg" width="260" alt="Hiwonder MentorPi robot with LiDAR and camera"> | <img src="docs/media/maze.jpg" width="320" alt="Maze with AprilTags on the walls"> | <img src="docs/media/trophy.jpg" width="150" alt="Trophy for 3rd place"> |
 
 ## The three tasks
 
-The maze is a grid of 0.254 m cells. All tasks run on **SLAM only**: the robot starts in a known cell, builds the map while driving, and never uses a pre-built map.
+The maze is a grid of 0.254 m cells. All three tasks use SLAM only. The robot starts in a known cell and builds the map while it drives. It never uses a map built before the run.
 
-| Task | Problem | How it was solved |
+| Task | Problem | Solution |
 |---|---|---|
-| **1. Known maze** | The maze layout is given, drive from the start cell to the goal cell | A receiver node downloads the maze from a ROS service. The maze becomes a graph and Dijkstra is solved offline. A goal sequencer converts the cell path into SLAM-frame poses (cell centres) and feeds them to Nav2 one after another |
-| **2. Unknown maze** | Nothing is known, map the whole maze | A hybrid explorer: it first walks cell by cell, preferring unvisited neighbours that the SLAM map shows as free. When it hits a dead end, it falls back to frontier search and drives to the nearest frontier centroid. Exploration ends when no new frontier centroid remains. The required output, a 2-D plot of the maze walls with the driven path, is rebuilt from the SLAM map afterwards |
-| **3. Object search** | Find the object marked with an AprilTag and report its colour and position | Same exploration as task 2. A camera on a pan/tilt mount, set to a fixed angle, runs AprilTag detection in the background. On the first detection the explorer stops, the robot returns to the start, and the object's position and colour are stored |
+| 1. Known maze | The maze layout is given. The robot drives from the start cell to the goal cell. | A node downloads the maze from a ROS service. The solver turns the maze into a graph and runs Dijkstra before the drive. The goal sequencer converts the cell path into cell-center poses in the SLAM frame and sends them to Nav2 one after another. |
+| 2. Unknown maze | Nothing is known. The robot maps the whole maze. | The hybrid explorer first walks cell by cell and prefers unvisited neighbors that the SLAM map shows as free. At a dead end, it switches to frontier search and drives to the nearest frontier centroid. Exploration ends when no frontier centroid is left. A second node then draws the required 2-D plot of the maze walls and the driven path from the SLAM map. |
+| 3. Object search | The robot finds the object with the AprilTag and reports its color and position. | The robot explores as in task 2. A camera at a fixed pan-tilt angle runs AprilTag detection in the background. On the first detection, the explorer stops, the robot returns to the start, and the detector stores the position and color of the object. |
 
-Scoring in the competition: task 1 by time with penalties for wall collisions, task 2 by the correctness of the plotted maze, task 3 by search time and the correct cube position and colour. Each attempt was limited to 5 minutes, with two attempts per task.
+The competition scored each task differently:
 
-Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) explains the algorithms and the Nav2 / SLAM setup, [docs/SOLUTION.md](docs/SOLUTION.md) compares every tuned parameter with the stock value.
+- Task 1 by time, with penalties for wall collisions.
+- Task 2 by the correctness of the plotted maze.
+- Task 3 by search time and by the correct position and color of the cube.
+
+Each task allowed two attempts of 5 minutes each.
 
 ## System architecture
 
-Two machines on one ROS 2 network (`ROS_DOMAIN_ID=3`, FastDDS):
+The robot and a laptop share one ROS 2 network, with `ROS_DOMAIN_ID=3` and FastDDS:
 
 ```
  Robot (Jazzy, started at boot by systemd)                     Laptop (decision making)
@@ -51,115 +62,128 @@ Two machines on one ROS 2 network (`ROS_DOMAIN_ID=3`, FastDDS):
         /searchforce_status:  found → finish_detection → finished
 ```
 
-The robot only runs the bring-up. The laptop runs the planning nodes and sends `NavigateToPose` goals to Nav2 on the robot, so algorithms could be changed without touching the robot.
+The robot runs only the bring-up. The laptop runs the decision nodes and sends `NavigateToPose` goals to Nav2 on the robot. So we could change the algorithms without touching the robot.
 
 ## How it works
 
-**Navigation stack.** slam_toolbox builds the map while the robot drives and publishes `map → odom`; there is no pre-built map and no AMCL. Nav2 plans on a costmap built only from that SLAM map: NavFn finds the global path, and a **Regulated Pure Pursuit** controller follows it. Pure Pursuit aims at a lookahead point on the path and steers along the arc through it, turning in place when the heading error is large and slowing near the end of a path. A custom behaviour tree replans at 1 Hz and clears the global costmap when a goal fails. The decision nodes run on a laptop and send `NavigateToPose` goals to Nav2 on the robot.
+slam_toolbox builds the map while the robot drives and publishes the `map` to `odom` transform. There is no map from before the run and no AMCL. Nav2 plans on a costmap built only from the SLAM map. NavFn finds the global path, and a Regulated Pure Pursuit controller follows it. A custom behavior tree replans at 1 Hz and clears the global costmap when a goal fails.
 
-**What is specific to this maze.** Cells are only 0.254 m wide, so the stock tuning does not fit:
+The cells are only 0.254 m wide, so the stock Nav2 and slam_toolbox tuning does not fit. The robot drives at 0.1 m/s with a fixed lookahead of 0.15 m. The SLAM map and the costmaps have a resolution of 1 cm. A tiny footprint and a steep inflation curve keep the paths near the corridor center. [PARAMETERS.md](docs/PARAMETERS.md) lists every changed value.
 
-| Area | Tuned for the maze |
-|---|---|
-| Controller | 0.1 m/s, fixed 0.15 m lookahead, rotate-to-heading and reversing enabled, 0.15 m goal tolerance, final heading ignored |
-| Costmaps | tiny footprint (about 2 cm), clearance via inflation (0.3 m radius, steep cost scaling 30), 1 × 1 m local window, 1 cm effective resolution |
-| slam_toolbox | 1 cm map resolution, 1.3 m laser range, a new scan every 5 cm, 0.01 rad or 0.5 s |
+In task 1, Dijkstra finds the shortest route on the maze graph. A move to a neighbor costs 1, and an open diagonal costs √2. Breadth-first search would be wrong, because the costs differ. The sequencer sends the next cell center when the robot is within 0.4 m of the current one, so the robot does not stop in every cell.
 
-**Task 1.** The maze (a grid of 4-bit wall masks) is downloaded over a ROS service and turned into a graph: moves between open neighbours cost 1, open diagonals cost √2. **Dijkstra** finds the shortest route because the edge weights differ. Each cell on the route becomes a goal at the cell centre, rotated into the SLAM frame, and a sequencer sends them to Nav2 one after another, advancing when the robot is within 0.4 m so it does not stop in every cell.
+In tasks 2 and 3, the explorer walks cell by cell and always picks the least-visited free neighbor. At a dead end, it switches to frontier search. A frontier is a free map cell next to an unknown map cell. In task 3, an AprilTag detector runs on the robot, and the first detection stops the exploration.
 
-**Task 2 and 3.** A hybrid explorer walks cell by cell with a visit counter, always choosing the least-visited free neighbour, and switches to **frontier search** (free cells next to unknown cells, 8-connected clustering, nearest centroid) when it hits a dead end. Exploration ends when no frontier centroid remains. In task 3 an AprilTag detector runs on the robot and the first sighting stops the exploration.
+## Run the nodes
 
-## How to run
+On the robot, start the bring-up. The systemd unit in [deploy/](deploy/) can start it at boot instead.
 
-**Robot** (once, or via systemd, see [deploy/](deploy/)):
 ```bash
 ros2 launch searchforce robot_bringup_launch.py
 ```
 
-**Laptop** (same `ROS_DOMAIN_ID`), one task at a time:
-```bash
-# Task 1: known maze
-ros2 run searchforce task1_maze_requester     # downloads the maze, writes rosfile.maze
-ros2 run searchforce task1_goal_sequencer     # solves it offline and drives the path
+On the laptop, set the same `ROS_DOMAIN_ID` and run one task at a time. For task 1, download the maze and drive the path:
 
-# Task 2 and 3: unknown maze (the detector on the robot is part of the bring-up, so it also runs in task 2)
-ros2 run searchforce task2_frontier_explorer
-ros2 run searchforce task2_map_reconstruction # task 2: rebuilds the maze plot once status == finished
+```bash
+ros2 run searchforce task1_maze_requester
+ros2 run searchforce task1_goal_sequencer
 ```
 
-More in [docs/RUNNING.md](docs/RUNNING.md), including where each command comes from.
+For tasks 2 and 3, start the explorer:
+
+```bash
+ros2 run searchforce task2_frontier_explorer
+```
+
+For task 2, also start the map reconstruction. It draws the maze plot when the status is `finished`.
+
+```bash
+ros2 run searchforce task2_map_reconstruction
+```
+
+The object detector is part of the robot bring-up, so it also runs during task 2. [RUNNING.md](docs/RUNNING.md) has the environment variables and the tools we used during the project.
 
 ## Repository layout
 
 ```
 ros2_ws/src/searchforce/
-  searchforce/
-    task1_maze_requester.py, task1_goal_sequencer.py, maze_solver.py
-    task2_frontier_explorer.py, task2_map_reconstruction.py
-    task3_object_detector.py
-    functions/                 maze graph helpers (maze file loading, adjacency matrix, cell numbering)
-  launch/                      robot_bringup_launch.py, navigation_launch.py (Nav2 with tuned params)
-  config/                      Nav2 params, slam_toolbox params, replanning behaviour tree
+	searchforce/
+		task1_maze_requester.py, task1_goal_sequencer.py, maze_solver.py
+		task2_frontier_explorer.py, task2_map_reconstruction.py
+		task3_object_detector.py
+		functions/                 maze graph helpers: maze file loading, adjacency matrix, cell numbering
+	launch/                      robot_bringup_launch.py, navigation_launch.py (Nav2 with the tuned parameters)
+	config/                      Nav2 parameters, slam_toolbox parameters, replanning behavior tree
 deploy/                        systemd unit that starts the robot bring-up
-docs/                          Solution write-up, run notes, media
+docs/                          architecture, parameters, run notes, media
 ```
 
 ## Build
 
-Needs ROS 2 Jazzy, Nav2 and slam_toolbox (installed from apt, not copied into this repo), plus the robot software that the course provided. That starter workspace ([LinusGro/MentorPi_ris](https://github.com/LinusGro/MentorPi_ris), MIT licence) is not copied here either. The bring-up launch file includes these packages from it:
+You need ROS 2 Jazzy, Nav2, and slam_toolbox from apt. You also need the robot software from the course starter workspace, [LinusGro/MentorPi_ris](https://github.com/LinusGro/MentorPi_ris), under the MIT license. This repository does not include any of them. The bring-up launch file includes these packages from the starter workspace:
 
-| Package | Role | Folder in the starter repo |
+| Package | Role | Folder in the starter workspace |
 |---|---|---|
-| `controller`, `ros_robot_controller`, `ros_robot_controller_msgs` | Motor and IMU driver, servo messages used by the detector | `ros2_ws/src/driver/` |
-| `ldlidar_node` | LiDAR driver (Apache-2.0) | `ros2_ws/src/ldrobot-lidar-ros2/` |
-| `peripherals` | Camera, image pipeline and AprilTag launch files | `ros2_ws/src/peripherals/` |
-| `orchestrator_launch` | slam_toolbox launch file | `ros2_ws/src/orchestrator_launch/` |
-| `maze_interface`, `maze_publisher_node` | Maze message, service and the maze server (Apache-2.0) | `ros2_ws/src/maze_interface/`, `ros2_ws/src/maze_publisher_node/` |
+| `controller`, `ros_robot_controller`, `ros_robot_controller_msgs` | Motor and IMU driver, and the servo messages that the detector uses. | `ros2_ws/src/driver/` |
+| `ldlidar_node` | LiDAR driver, under Apache-2.0. | `ros2_ws/src/ldrobot-lidar-ros2/` |
+| `peripherals` | Launch files for the camera, the image pipeline, and AprilTag. | `ros2_ws/src/peripherals/` |
+| `orchestrator_launch` | The slam_toolbox launch file. | `ros2_ws/src/orchestrator_launch/` |
+| `maze_interface`, `maze_publisher_node` | The maze message, the maze service, and the maze server, under Apache-2.0. | `ros2_ws/src/maze_interface/`, `ros2_ws/src/maze_publisher_node/` |
 
-Nodes that import these packages (`task1_maze_requester`, `task3_object_detector`) and `robot_bringup_launch.py` only start on a workspace that contains them. Everything else, including the Nav2 and slam_toolbox configuration, builds and starts without them.
+`task1_maze_requester`, `task3_object_detector`, and `robot_bringup_launch.py` start only in a workspace that contains these packages. Everything else builds and starts without them, including the Nav2 and slam_toolbox configuration.
 
-The Dockerfile builds the package on a plain `ros:jazzy` image, which checks that the package and its dependencies install and build without the vendor packages:
+The Dockerfile builds the package on a plain `ros:jazzy` image. The build checks that the package and its dependencies install and build without the vendor packages.
 
 ```bash
 docker build -t autonomous-maze-explorer .
 ```
 
-On a ROS 2 Jazzy machine:
+To build on a ROS 2 Jazzy machine, install the dependencies first:
 
 ```bash
 sudo apt install python3-numpy python3-opencv python3-scipy python3-networkx python3-transforms3d \
-  ros-jazzy-nav2-bringup ros-jazzy-slam-toolbox ros-jazzy-apriltag-msgs ros-jazzy-cv-bridge ros-jazzy-tf-transformations
-pip3 install --break-system-packages numba   # not packaged for Ubuntu Noble
+	ros-jazzy-nav2-bringup ros-jazzy-slam-toolbox ros-jazzy-apriltag-msgs ros-jazzy-cv-bridge ros-jazzy-tf-transformations
+```
+
+Ubuntu Noble has no package for numba, so install it with pip:
+
+```bash
+pip3 install --break-system-packages numba
+```
+
+Then build the package:
+
+```bash
 cd ros2_ws && colcon build --packages-select searchforce && source install/setup.bash
 ```
 
-Each node writes its files to `~/searchforce_cache` on the machine it runs on: the maze file, robot track and reconstructed map on the laptop, the object result on the robot. Set `SEARCHFORCE_CACHE` to change it.
+Each node writes its files to `~/searchforce_cache` on the machine it runs on. On the laptop, that is the maze file, the robot track, and the reconstructed map. On the robot, it is the object result. To use a different folder, set `SEARCHFORCE_CACHE`.
 
 ## Team
 
-Group project in a team of four at TU Darmstadt. Everyone worked on the same ROS 2 package. This repo is a cleaned-up version of the code that ran in the competition, moved here from the team's GitLab. The code is the team's work from 2025; the cleanup and the documentation for this public version were prepared with an AI assistant (Claude).
+We were a team of four at TU Darmstadt and all worked on the same ROS 2 package. This repository is a cleaned-up copy of the code that ran in the competition, moved here from the GitLab of the team. The code is the work of the team from 2025. I prepared the cleanup and the documentation of this public version with an AI assistant (Claude).
 
-**Moritz Hölper:** Nav2 and slam_toolbox tuning ([config/](ros2_ws/src/searchforce/config/), parameter table in [docs/SOLUTION.md](docs/SOLUTION.md)), `task1_goal_sequencer`, `task2_frontier_explorer`.
+I, Moritz Hölper, did the Nav2 and slam_toolbox tuning in [config/](ros2_ws/src/searchforce/config/), with the parameter table in [PARAMETERS.md](docs/PARAMETERS.md). I also wrote `task1_goal_sequencer` and `task2_frontier_explorer`.
 
-**Teammates:** the AprilTag object detection and colour classification (`task3_object_detector`), the post-processing of the SLAM map from task 2 (`task2_map_reconstruction`), and the project presentation.
+My teammates wrote the AprilTag object detection and color classification in `task3_object_detector`, and the post-processing of the SLAM map from task 2 in `task2_map_reconstruction`. They also made the project presentation.
 
 ## Credits
 
-The course starter repo (robot drivers, maze service, maze file helpers) was provided by the course staff, see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+The course staff provided the starter workspace with the robot drivers, the maze service, and the maze file helpers. [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) has the license text.
 
-## What I'd do differently
+## What I would do differently
 
-The code grew by trial and error on the robot over one semester, and it shows: the explorer is long and repetitive, there are no tests, and some logs are in German. I left it the way it ran in the competition instead of polishing it afterwards. Looking back, I would:
+The code grew by trial and error on the robot over one semester, and you can see it. The explorer is long and repetitive, there are no tests, and some log messages are in German. I left the code as it ran in the competition and did not polish it afterwards. Today I would change five things:
 
-- **Plan on the map, not on an assumed grid.** The cell walk puts goals on an absolute grid that assumes the SLAM map is aligned with the maze. Small map rotations made those goals drift, and frontier search was added to work around it. Starting from frontier search, or aligning the map to the maze first, would have been simpler.
-- **Pick frontiers by path length**, not straight-line distance, so the robot does not choose a frontier that is close but behind a wall.
-- **Put more effort into understanding the math behind the parameters.** We tuned mostly by trial and error and judged a change by the next run, which with a single run per change can also be chance. One look at the formula would have shown the problem with `minimum_angle_penalty: 5.0`: we raised it expecting a stronger heading penalty, but in the scan matcher it is the floor of a `max()` around a multiplier that is at most 1, so any value above 1 has no effect and the penalty is off ([ARCHITECTURE.md, section 4](docs/ARCHITECTURE.md#4-slam-slam_toolbox)). Today I would work through the math of a parameter in the source or the underlying method first, change one thing at a time, and compare several runs on the same route.
-- **Write the grid and frontier helpers as pure functions with unit tests**, so they can be checked without the robot instead of only on it.
-- **Record test and competition runs** (videos, rosbags, the task 2 maze plots). The only footage left is an early test run; there is nothing from competition day.
+- **Plan on the map, not on an assumed grid.** The cell walk puts goals on an absolute grid and assumes that the SLAM map is aligned with the maze. Small rotations of the map moved those goals away from the real cells, and we added frontier search to work around that. It would have been simpler to start with frontier search, or to align the map with the maze first.
+- **Pick frontiers by path length.** The explorer uses straight-line distance, so it can pick a frontier that is close but behind a wall.
+- **Read the math behind a parameter before I tune it.** We tuned mostly by trial and error and judged each change by one run, and one run can be chance. One look at the formula would have shown the problem with `minimum_angle_penalty: 5.0`. We raised the value to get a stronger heading penalty. In the scan matcher, the value is the floor of a `max()` around a multiplier that is at most 1. Any value above 1 therefore turns the penalty off. [ARCHITECTURE.md](docs/ARCHITECTURE.md#slam-with-slam_toolbox) has the details. Today I would read the source or the method behind a parameter first, change one parameter at a time, and compare several runs on the same route.
+- **Write the grid and frontier helpers as pure functions with unit tests.** Then I could check them without the robot.
+- **Record the test and competition runs**, with videos, rosbags, and the maze plots from task 2. The only footage left is one early test run. Nothing is left from the competition day.
 
 ## Known limitations
 
-- The robot drivers and the maze server come from the course starter repo and are not included, so the full bring-up does not run without them.
-- No automated tests in the repo.
-- Some comments and log messages are in German or Chinese. Earlier prototypes were removed.
-- Tested in a plain ROS 2 Jazzy container with mocked vendor packages and a simulated map. The real robot, LiDAR, camera and timing were not re-tested after cleaning up the repo.
+- The robot drivers and the maze server come from the course starter workspace and are not in this repository. Without them, the full bring-up does not run.
+- The repository has no automated tests.
+- Some comments and log messages are in German or Chinese.
+- After the cleanup, I tested the code in a plain ROS 2 Jazzy container with mocked vendor packages and a simulated map. I did not test it again on the real robot, LiDAR, and camera.
