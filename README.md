@@ -163,7 +163,7 @@ Each node writes its files to `~/searchforce_cache` on the machine it runs on. O
 
 We were a team of four at TU Darmstadt and all worked on the same ROS 2 package. This repository is a cleaned-up copy of the code that ran in the competition, moved here from the GitLab of the team. The code is the work of the team from 2025. I prepared the cleanup and the documentation of this public version with an AI assistant (Claude).
 
-I, Moritz Hölper, did the Nav2 and slam_toolbox tuning in [config/](ros2_ws/src/searchforce/config/), with the parameter table in [PARAMETERS.md](docs/PARAMETERS.md). I also wrote `task1_goal_sequencer` and `task2_frontier_explorer`.
+I, Moritz Hoelper, did the Nav2 and slam_toolbox tuning in [config/](ros2_ws/src/searchforce/config/), with the parameter table in [PARAMETERS.md](docs/PARAMETERS.md). I also wrote `task1_goal_sequencer` and `task2_frontier_explorer`.
 
 My teammates wrote the AprilTag object detection and color classification in `task3_object_detector`, and the post-processing of the SLAM map from task 2 in `task2_map_reconstruction`. They also made the project presentation.
 

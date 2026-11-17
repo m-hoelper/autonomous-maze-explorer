@@ -4,7 +4,7 @@
   <name>searchforce</name>
   <version>0.1.0</version>
   <description>Autonomous maze exploration, SLAM navigation and AprilTag object search (ROS 2)</description>
-  <maintainer email="316987136+m-hoelper@users.noreply.github.com">Moritz Hölper</maintainer>
+  <maintainer email="316987136+m-hoelper@users.noreply.github.com">Moritz Hoelper</maintainer>
   <license>MIT</license>
 
   <exec_depend>rclpy</exec_depend>

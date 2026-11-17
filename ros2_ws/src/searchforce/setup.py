@@ -17,7 +17,7 @@ setup(
             ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='Moritz Hölper',
+    maintainer='Moritz Hoelper',
     maintainer_email='316987136+m-hoelper@users.noreply.github.com',
     description='Autonomous maze exploration, SLAM navigation and AprilTag object search (ROS 2)',
     license='MIT',
